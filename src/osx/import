@@ -1,0 +1,3 @@
+import() {
+  gpg --import $1
+}

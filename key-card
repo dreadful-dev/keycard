@@ -44,7 +44,14 @@ import_implementation() {
   if [[ -f "${script_dir}/mount_key_export" ]]; then
     source "${script_dir}/mount_key_export"
   else
-    echo "Error: Cannot find gpg_key_setup"
+    echo "Error: Cannot find mount_key_export"
+    return 1
+  fi
+
+  if [[ -f "${script_dir}/import" ]]; then
+    source "${script_dir}/import"
+  else
+    echo "Error: Cannot find import"
     return 1
   fi
 }
