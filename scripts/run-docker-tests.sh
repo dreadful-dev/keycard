@@ -9,7 +9,7 @@ for os in $(ls $TESTDIR); do
     echo "using $PARENTDIR as volume mount"
   
     docker build -t $os:test -f $TESTDIR/$os/Dockerfile .
-    # docker run -v $PARENTDIR:/key-card $os:test bash /key-card/test/$os/run-tests.sh
+    # docker run -v $PARENTDIR:/keycard $os:test bash /keycard/test/$os/run-tests.sh
 done
 
-docker run --privileged -it -v $PARENTDIR:/key-card $os:test bash
+docker run --privileged -it -v $PARENTDIR:/keycard $os:test bash

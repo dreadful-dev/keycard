@@ -15,9 +15,9 @@ RUN echo "console-setup console-setup/codeset47 select Latin1" | sudo debconf-se
 
 
 # Copy your application's source code
-COPY . /key-card
+COPY . /keycard
 
 # Set the working directory
-WORKDIR /key-card
+WORKDIR /keycard
 
-# CMD [ "source", "key-card" ]
+# CMD [ "source", "keycard" ]
