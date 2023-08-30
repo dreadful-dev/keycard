@@ -1,19 +1,19 @@
-###########################################################
-#  01000100 01010010 01000101 01000001 01000100 01000110  #
-#  01010101 01001100  01000100 01000101 01010110          #
-###########################################################
-#                                                         #
-#  PUBLIC KEY EXPORT                                      #
-#                                                         #
-#  This script exports public GPG keys to an image file.  #
-#  Set the KEYID variable to the ID of the key you want   #
-#  to export. Run this script with root privileges. The   #
-#  public key will be exported to a file in the .tmp/public#
-#  directory. The image file and mount point are hard-coded#
-#  in the script. If you want to change them, edit the IMG #
-#  and MNT variables.                                     #
-#                                                         #
-###########################################################
+#############################################################
+#   01000100 01010010 01000101 01000001 01000100 01000110   #
+#   01010101 01001100 00101101 01000100 01000101 01010110   #
+#############################################################
+#                                                           #
+#  PUBLIC KEY EXPORT                                        #
+#                                                           #
+#  This script exports public GPG keys to an image file.    #
+#  Set the KEYID variable to the ID of the key you want     #
+#  to export. Run this script with root privileges. The     #
+#  public key will be exported to a file in the .tmp/public #
+#  directory. The image file and mount point are hard-coded #
+#  in the script. If you want to change them, edit the IMG  #
+#  and MNT variables.                                       #
+#                                                           #
+#############################################################
 export_public_keys() {
   # Set the image file name
   local IMG="public_gpg.img"
@@ -41,6 +41,10 @@ export_public_keys() {
 
   # Export the public key to the mounted filesystem
   gpg --armor --export $KEYID | sudo tee $MNT/gpg-$KEYID-$(date +%F).asc
+  gpg --export-ownertrust | sudo tee $MNT/gpg-owner-trust.txt
+
+  # Sync the filesystem
+  sudo sync
 
   # Unmount the filesystem
   sudo umount $MNT
