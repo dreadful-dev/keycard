@@ -33,6 +33,13 @@ import_implementation() {
     echo "Error: Cannot find gpg_key_setup"
     return 1
   fi
+
+  if [[ -f "${script_dir}/export_public_keys" ]]; then
+    source "${script_dir}/export_public_keys"
+  else
+    echo "Error: Cannot find gpg_key_setup"
+    return 1
+  fi
 }
 
 import_modules() {
