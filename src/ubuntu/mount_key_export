@@ -1,0 +1,13 @@
+mount_key_export() {
+  # Set the image file name
+  local IMG="public_gpg.img"
+
+  # Set the mount point
+  local MNT=".tmp/public"
+
+  # Create a loopback device
+  local LOOPBACK=$(sudo losetup --find --show $IMG)
+
+  # Mount the filesystem
+  sudo mount $LOOPBACK $MNT
+}
