@@ -1,0 +1,78 @@
+###########################################################
+#  01000100 01010010 01000101 01000001 01000100 01000110  #
+#  01010101 01001100  01000100 01000101 01010110          #
+###########################################################
+#                                                         #
+#  KEY BACKUP                                             #
+#                                                         #
+#  This script creates a loopback filesystem using an     #
+#  image named gpg.img. It creates a 25MB image file,     #
+#  sets up a loopback device for the image, encrypts the  #
+#  loopback device using LUKS, creates an ext2 filesystem #
+#  on the encrypted device, mounts the filesystem, copies #
+#  the GnuPG directory to the mounted filesystem, and     #
+#  then unmounts the filesystem and detaches the loopback #
+#  device. The path to your GnuPG directory should be set #
+#  in the GNUPGHOME environment variable. Run this script #
+#  with root privileges.                                  #
+#                                                         #
+###########################################################
+
+backup_private_keys() {
+  # This function creates a loopback filesystem using an image named gpg.img.
+  # It creates a 25MB image file, sets up a loopback device for the image,
+  # encrypts the loopback device using LUKS, creates an ext2 filesystem on the
+  # encrypted device, mounts the filesystem, copies the GnuPG directory to the
+  # mounted filesystem, and then unmounts the filesystem and detaches the loopback device.
+  # Please replace $GNUPGHOME with the path to your GnuPG directory.
+  # Run this script with root privileges.
+
+  # Set the image file name
+  local IMG="gpg.img"
+
+  # Set the mount point
+  local MNT=".tmp/encrypted-storage"
+
+  # Set the size of the image (25M in this case)
+  local SIZE="25M"
+
+  # Create an empty image file
+  dd if=/dev/zero of=$IMG bs=$SIZE count=1
+
+  # Create a loopback device
+  local LOOPBACK=$(sudo losetup --find --show $IMG)
+  echo $LOOPBACK
+
+  # Encrypt the loopback device
+  sudo cryptsetup luksFormat $LOOPBACK
+
+  # Open the encrypted device
+  sudo cryptsetup luksOpen $LOOPBACK secret
+
+  # Create an ext4 filesystem
+  sudo mkfs.ext4 /dev/mapper/secret -L gpg-$(date +%F)
+
+  # Create the mount point
+  sudo mkdir -p $MNT
+
+  # Mount the filesystem
+  sudo mount /dev/mapper/secret $MNT
+
+  # Copy the GnuPG directory to the mounted filesystem
+  sudo cp -avi $GNUPGHOME $MNT
+
+  # Unmount the filesystem
+  sudo umount $MNT
+
+  # Close the encrypted device
+  sudo cryptsetup luksClose secret
+
+  # Detach the loopback device
+  sudo losetup -d $LOOPBACK
+
+  echo "Do you want to run 'export_public_keys' next? (y/n)"
+  read answer
+  if [ "$answer" != "${answer#[Yy]}" ] ;then
+    export_public_keys
+  fi
+}

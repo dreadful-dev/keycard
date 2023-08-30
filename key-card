@@ -1,0 +1,91 @@
+#!/bin/bash
+
+import_implementation() {
+  local script_dir="$1"
+  if [[ -z "$script_dir" ]]; then
+    echo "Error: script_dir is not set"
+    exit 1
+  fi
+  
+  # The following line of code is used to remove any trailing slash from the script_dir variable.
+  # The "%" operator is a parameter expansion in bash. It is used to remove a trailing substring from a string.
+  # In this case, the substring is "/", so any trailing slash from the script_dir variable will be removed.
+  script_dir="${script_dir%/}"
+  
+  if [[ -f "${script_dir}/backup_private_keys" ]]; then
+    source "${script_dir}/backup_private_keys"
+  else
+    echo "Error: Cannot find backup_private_keys"
+    echo "script_dir: ${script_dir}"
+    return 1
+  fi
+
+  if [[ -f "${script_dir}/install_deps" ]]; then
+    source "${script_dir}/install_deps"
+  else
+    echo "Error: Cannot find install_deps"
+    return 1
+  fi
+
+  if [[ -f "${script_dir}/gpg_key_setup" ]]; then
+    source "${script_dir}/gpg_key_setup"
+  else
+    echo "Error: Cannot find gpg_key_setup"
+    return 1
+  fi
+}
+
+import_modules() {
+  
+  local OS=""
+  
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux
+    if [ -f /etc/os-release ]; then
+      . /etc/os-release
+      case $ID in
+        debian)
+          OS="debian"
+          ;;
+        ubuntu)
+          OS="ubuntu"
+          ;;
+        # fedora)
+        #   OS="fedora"
+        #   ;;
+        # centos)
+        #   OS="centos"
+        #   ;;
+        *)
+          OS=$ID
+          ;;
+      esac
+    fi
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # Mac OSX
+    OS="osx"
+  # elif [[ "$OSTYPE" == "cygwin" ]]; then
+  #   # POSIX compatibility layer and Linux environment emulation for Windows
+  #   OS="windows/cygwin"
+  # elif [[ "$OSTYPE" == "msys" ]]; then
+  #   # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+  #   OS="windows/msys"
+  # elif [[ "$OSTYPE" == "win32" ]]; then
+  #   OS="windows"
+  # elif [[ "$OSTYPE" == "freebsd"* ]]; then
+  #   # FreeBSD
+  #   OS="freebsd"
+  else
+    # Unknown.
+    echo "Error: Unknown OS: $OSTYPE"
+    exit 1
+  fi
+  echo "Detected OS: $OS"
+  
+  local module_dir="$(dirname "${BASH_SOURCE[0]}")/src" 
+  local implementation_dir="${module_dir}/${OS}"
+  import_implementation $implementation_dir
+}
+
+import_modules
+install_deps

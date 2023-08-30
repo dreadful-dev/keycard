@@ -1,0 +1,50 @@
+###########################################################
+#  01000100 01010010 01000101 01000001 01000100 01000110  #
+#  01010101 01001100  01000100 01000101 01010110          #
+###########################################################
+#                                                         #
+#  PUBLIC KEY EXPORT                                      #
+#                                                         #
+#  This script exports public GPG keys to an image file.  #
+#  Set the KEYID variable to the ID of the key you want   #
+#  to export. Run this script with root privileges. The   #
+#  public key will be exported to a file in the .tmp/public#
+#  directory. The image file and mount point are hard-coded#
+#  in the script. If you want to change them, edit the IMG #
+#  and MNT variables.                                     #
+#                                                         #
+###########################################################
+export_public_keys() {
+  # Set the image file name
+  local IMG="public_gpg.img"
+
+  # Set the mount point
+  local MNT=".tmp/public"
+
+  # Set the size of the image (25M in this case)
+  local SIZE="25M"
+
+  # Create an empty image file
+  dd if=/dev/zero of=$IMG bs=$SIZE count=1
+
+  # Create a loopback device
+  local LOOPBACK=$(sudo losetup --find --show $IMG)
+
+  # Create an ext2 filesystem
+  sudo mkfs.ext4 $LOOPBACK
+
+  # Create the mount point
+  sudo mkdir -p $MNT
+
+  # Mount the filesystem
+  sudo mount $LOOPBACK $MNT
+
+  # Export the public key to the mounted filesystem
+  gpg --armor --export $KEYID | sudo tee $MNT/gpg-$KEYID-$(date +%F).asc
+
+  # Unmount the filesystem
+  sudo umount $MNT
+
+  # Detach the loopback device
+  sudo losetup -d $LOOPBACK
+}

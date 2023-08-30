@@ -1,0 +1,61 @@
+#############################################################
+#  01000100 01010010 01000101 01000001 01000100 01000110    #
+#  01010101 01001100  01000100 01000101 01010110            #
+#############################################################
+#                                                           #
+#  GPG KEY SETUP                                            #
+#                                                           #
+#  This function sets up a GPG key. It creates a temporary  #
+#  working directory and hardens the configuration. It      #
+#  generates a strong passphrase and a new GPG key. It      #
+#  allows for the addition of extra identities. It verifies #
+#  the keys and exports the secret keys. It also creates a  #
+#  revocation certificate.                                  #
+#                                                           #
+#############################################################
+
+gpg_key_setup() {
+  # Temporary working directory
+  export GNUPGHOME=$(mktemp -d gnupg_$(date +%Y%m%d%H%M)_XXX)
+
+  # Harden configuration
+  wget -O $GNUPGHOME/gpg.conf https://raw.githubusercontent.com/drduh/config/master/gpg.conf
+
+  # Generate a strong passphrase
+  passphrase=$(gpg --gen-random --armor 0 24)
+  echo "Generated passphrase: $passphrase"
+
+  # Generate a new key with GPG
+  gpg --expert --full-generate-key
+
+  # Add extra identities
+  read -p "Enter additional email address (or leave blank to skip): " email
+  if [ ! -z "$email" ]; then
+    gpg --expert --edit-key $KEYID <<EOF
+  adduid
+  $email
+  EOF
+  fi
+
+  # Verify
+  gpg -K
+
+  echo "Enter your KEYID:"
+  read KEYID
+
+  # Verify keys
+  echo "Verifying keys..."
+  gpg -K
+  gpg --export $KEYID | hokey lint
+
+  # Export secret keys
+  echo "Exporting secret keys..."
+  gpg --armor --export-secret-keys $KEYID > $GNUPGHOME/mastersub.key
+  gpg --armor --export-secret-subkeys $KEYID > $GNUPGHOME/sub.key
+
+  # Create revocation certificate
+  echo "Creating revocation certificate..."
+  gpg --output $GNUPGHOME/revoke.asc --gen-revoke $KEYID
+
+  echo "Process completed."
+}
