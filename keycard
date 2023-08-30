@@ -109,4 +109,30 @@ import_modules() {
 }
 
 import_modules
-install_deps
+
+keycard() {
+  local command=$1
+  shift
+  case $command in
+    install)
+      install_deps "$@"
+      ;;
+    backup)
+      backup_private_keys "$@"
+      ;;
+    export)
+      export_public_keys "$@"
+      ;;
+    setup)
+      gpg_key_setup "$@"
+      ;;
+    mount)
+      mount_key_export "$@"
+      ;;
+    *)
+      echo "Invalid command: $command"
+      echo "Valid commands are: backup, export, setup, mount"
+      return 1
+      ;;
+  esac
+}

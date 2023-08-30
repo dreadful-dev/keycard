@@ -1,3 +1,4 @@
 import() {
-  gpg --import $1
+  KEYID=$(gpg --import $1 | awk '/key/{print $3}')
+  echo "Imported Key ID: $KEYID"
 }
