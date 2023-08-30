@@ -1,13 +1,16 @@
 mount_key_export() {
   # Set the image file name
-  local IMG="public_gpg.img"
+  export KEYCARD_PUBLIC_EXPORT_IMG="public_gpg.img"
 
   # Set the mount point
-  local MNT=".tmp/public"
+  export KEYCARD_PUBLIC_EXPORT_MNT=".tmp/public"
 
   # Create a loopback device
-  local LOOPBACK=$(sudo losetup --find --show $IMG)
+  export KEYCARD_PUBLIC_EXPORT_LOOPBACK=$(sudo losetup --find --show $KEYCARD_PUBLIC_EXPORT_IMG)
+
+  # Create the mount point if it doesn't exist
+  mkdir -p $KEYCARD_PUBLIC_EXPORT_MNT
 
   # Mount the filesystem
-  sudo mount $LOOPBACK $MNT
+  sudo mount $KEYCARD_PUBLIC_EXPORT_LOOPBACK $KEYCARD_PUBLIC_EXPORT_MNT
 }

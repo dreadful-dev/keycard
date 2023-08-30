@@ -53,9 +53,4 @@ install_deps() {
 
   echo "✅ done installing dependancies"
   echo "✅ gpg utils loaded"
-  echo "Do you want to run 'gpg_key_setup' next? (y/n)"
-  read answer
-  if [ "$answer" != "${answer#[Yy]}" ] ;then
-    gpg_key_setup
-  fi
 }

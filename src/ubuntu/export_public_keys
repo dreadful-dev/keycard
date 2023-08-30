@@ -51,4 +51,6 @@ export_public_keys() {
 
   # Detach the loopback device
   sudo losetup -d $LOOPBACK
+
+  echo "Public key exported to $IMG"
 }

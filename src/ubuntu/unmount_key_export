@@ -1,0 +1,8 @@
+unmount_key_export() {
+  sudo umount -vv $KEYCARD_PUBLIC_EXPORT_MNT
+
+  # Detach the loopback device
+  sudo losetup -d $KEYCARD_PUBLIC_EXPORT_LOOPBACK
+
+  echo "unmounted $KEYCARD_PUBLIC_EXPORT_MNT"
+}

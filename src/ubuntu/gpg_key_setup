@@ -100,11 +100,5 @@ EOF
 
   # Create revocation certificate
   gpg --output "$GNUPGHOME/revoke.asc" --gen-revoke "$KEYID" || { echo "Failed to create revocation certificate. Exiting."; return; }
-
-  echo "🔐 Done"
-  echo "Do you want to run 'backup_private_keys' next? (y/n)"
-  read answer
-  if [ "$answer" != "${answer#[Yy]}" ] ;then
-    backup_private_keys
-  fi
+  echo "🔐 Done creating keys"
 }

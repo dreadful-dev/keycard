@@ -69,10 +69,6 @@ backup_private_keys() {
 
   # Detach the loopback device
   sudo losetup -d $LOOPBACK
-
-  echo "Do you want to run 'export_public_keys' next? (y/n)"
-  read answer
-  if [ "$answer" != "${answer#[Yy]}" ] ;then
-    export_public_keys
-  fi
+  
+  echo "✅ done backing up private keys"
 }

@@ -12,48 +12,14 @@ import_implementation() {
   # In this case, the substring is "/", so any trailing slash from the script_dir variable will be removed.
   script_dir="${script_dir%/}"
   
-  if [[ -f "${script_dir}/backup_private_keys" ]]; then
-    source "${script_dir}/backup_private_keys"
-  else
-    echo "Error: Cannot find backup_private_keys"
-    echo "script_dir: ${script_dir}"
-    return 1
-  fi
-
-  if [[ -f "${script_dir}/install_deps" ]]; then
-    source "${script_dir}/install_deps"
-  else
-    echo "Error: Cannot find install_deps"
-    return 1
-  fi
-
-  if [[ -f "${script_dir}/gpg_key_setup" ]]; then
-    source "${script_dir}/gpg_key_setup"
-  else
-    echo "Error: Cannot find gpg_key_setup"
-    return 1
-  fi
-
-  if [[ -f "${script_dir}/export_public_keys" ]]; then
-    source "${script_dir}/export_public_keys"
-  else
-    echo "Error: Cannot find gpg_key_setup"
-    return 1
-  fi
-
-  if [[ -f "${script_dir}/mount_key_export" ]]; then
-    source "${script_dir}/mount_key_export"
-  else
-    echo "Error: Cannot find mount_key_export"
-    return 1
-  fi
-
-  if [[ -f "${script_dir}/import" ]]; then
-    source "${script_dir}/import"
-  else
-    echo "Error: Cannot find import"
-    return 1
-  fi
+  for file in $(find "${script_dir}" -type f); do
+    if [[ -f "$file" ]]; then
+      source "$file"
+    else
+      echo "Error: Cannot find $file"
+      return 1
+    fi
+  done
 }
 
 import_modules() {
@@ -129,9 +95,15 @@ keycard() {
     mount)
       mount_key_export "$@"
       ;;
+    unmount)
+      unmount_key_export "$@"
+      ;;
+    help)
+      echo "Valid commands are: install, backup, export, setup, mount, help"
+      ;;
     *)
       echo "Invalid command: $command"
-      echo "Valid commands are: backup, export, setup, mount"
+      echo "Valid commands are: install, backup, export, setup, mount, help"
       return 1
       ;;
   esac
