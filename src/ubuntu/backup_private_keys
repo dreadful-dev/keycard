@@ -1,22 +1,22 @@
-###########################################################
-#  01000100 01010010 01000101 01000001 01000100 01000110  #
-#  01010101 01001100  01000100 01000101 01010110          #
-###########################################################
-#                                                         #
-#  KEY BACKUP                                             #
-#                                                         #
-#  This script creates a loopback filesystem using an     #
-#  image named gpg.img. It creates a 25MB image file,     #
-#  sets up a loopback device for the image, encrypts the  #
-#  loopback device using LUKS, creates an ext2 filesystem #
-#  on the encrypted device, mounts the filesystem, copies #
-#  the GnuPG directory to the mounted filesystem, and     #
-#  then unmounts the filesystem and detaches the loopback #
-#  device. The path to your GnuPG directory should be set #
-#  in the GNUPGHOME environment variable. Run this script #
-#  with root privileges.                                  #
-#                                                         #
-###########################################################
+#############################################################
+#   01000100 01010010 01000101 01000001 01000100 01000110   #
+#   01010101 01001100 00101101 01000100 01000101 01010110   #
+#############################################################
+#                                                           #
+#  KEY BACKUP                                               #
+#                                                           #
+#  This script creates a loopback filesystem using an       #
+#  image named gpg.img. It creates a 25MB image file,       #
+#  sets up a loopback device for the image, encrypts the    #
+#  loopback device using LUKS, creates an ext2 filesystem   #
+#  on the encrypted device, mounts the filesystem, copies   #
+#  the GnuPG directory to the mounted filesystem, and       #
+#  then unmounts the filesystem and detaches the loopback   #
+#  device. The path to your GnuPG directory should be set   #
+#  in the GNUPGHOME environment variable. Run this script   #
+#  with root privileges.                                    #
+#                                                           #
+#############################################################
 
 backup_private_keys() {
   # This function creates a loopback filesystem using an image named gpg.img.
@@ -43,8 +43,8 @@ backup_private_keys() {
   local LOOPBACK=$(sudo losetup --find --show $IMG)
   echo $LOOPBACK
 
-  # Encrypt the loopback device
-  sudo cryptsetup luksFormat $LOOPBACK
+  # Encrypt the loopback device without prompting
+  sudo cryptsetup -q luksFormat $LOOPBACK
 
   # Open the encrypted device
   sudo cryptsetup luksOpen $LOOPBACK secret
