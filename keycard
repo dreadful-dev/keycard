@@ -1,5 +1,13 @@
 #!/bin/bash
 
+KEYCARD_COLOR_RED='\033[0;31m'
+KEYCARD_COLOR_GREEN='\033[0;32m'
+KEYCARD_COLOR_YELLOW='\033[0;33m'
+KEYCARD_COLOR_BLUE='\033[0;34m'
+KEYCARD_COLOR_MAGENTA='\033[0;35m'
+KEYCARD_COLOR_CYAN='\033[0;36m'
+KEYCARD_COLOR_RESET='\033[0m'
+
 import_implementation() {
   local script_dir="$1"
   if [[ -z "$script_dir" ]]; then
@@ -51,6 +59,7 @@ import_modules() {
   elif [[ "$OSTYPE" == "darwin"* ]]; then
     # Mac OSX
     OS="osx"
+    echo "${KEYCARD_COLOR_YELLOW}Warning: OSX is support is under development${KEYCARD_COLOR_RESET}"
   # elif [[ "$OSTYPE" == "cygwin" ]]; then
   #   # POSIX compatibility layer and Linux environment emulation for Windows
   #   OS="windows/cygwin"
@@ -64,10 +73,9 @@ import_modules() {
   #   OS="freebsd"
   else
     # Unknown.
-    echo "Error: Unknown OS: $OSTYPE"
+    echo "${KEYCARD_COLOR_RED}Error: Unknown OS: $OSTYPE ${KEYCARD_COLOR_RESET}"
     exit 1
   fi
-  echo "Detected OS: $OS"
   
   local module_dir="$(dirname "${BASH_SOURCE[0]}")/src" 
   local implementation_dir="${module_dir}/${OS}"
