@@ -27,3 +27,11 @@ To backup private keys:
 ```shell
 keycard backup
 ```
+
+## Roadmap
+
+Planned features to add in the future:
+- Transferring keys to YubiKey
+- Support for more operating systems: Currently, the scripts are designed for Ubuntu and macOS. We plan to add support for other Linux distributions and Windows.
+- Improved error handling: I plan to add more robust error handling to the scripts to make them more reliable.
+- Automated tests: I plan to add automated tests and CI/CD to ensure the scripts work as expected.
