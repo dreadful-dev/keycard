@@ -91,6 +91,9 @@ keycard() {
     install)
       install_deps "$@"
       ;;
+    swap)
+      swap "$@"
+      ;;
     backup)
       backup_private_keys "$@"
       ;;
