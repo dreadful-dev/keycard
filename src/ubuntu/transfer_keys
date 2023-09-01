@@ -1,0 +1,32 @@
+transfer_keys_to_yubikey() {
+  # Check for dependencies
+  command -v gpg >/dev/null 2>&1 || { echo "❌ gpg is required but not installed. Exiting."; return; }
+  # Ensure global environment var $KEYID is set
+  
+  if [ -z "$KEYID" ]; then
+    echo "❌ KEYID environment variable is not set. Exiting."
+    return
+  fi
+  
+
+  # Edit the key
+  gpg --edit-key $KEYID
+
+  # Select and transfer the signature key
+  echo "Select and transfer the signature key"
+  printf "key 1\nkeytocard\n1\ny\n" | gpg --command-fd 0
+
+  # Select and transfer the encryption key
+  echo "Select and transfer the encryption key"
+  printf "key 1\nkey 2\nkeytocard\n2\ny\n" | gpg --command-fd 0
+
+  # Select and transfer the authentication key
+  echo "Select and transfer the authentication key"
+  printf "key 2\nkey 3\nkeytocard\n3\ny\n" | gpg --command-fd 0
+
+  # Save and quit
+  printf "save\n" | gpg --command-fd 0
+
+  # Verify the sub-keys have been moved to YubiKey
+  gpg -K
+}
