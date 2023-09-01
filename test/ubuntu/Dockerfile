@@ -20,4 +20,6 @@ COPY . /keycard
 # Set the working directory
 WORKDIR /keycard
 
+RUN source keycard
+
 # CMD [ "source", "keycard" ]
