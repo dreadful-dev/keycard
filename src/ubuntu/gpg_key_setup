@@ -42,9 +42,6 @@ gpg_key_setup() {
 Key-Type: $KEY_TYPE
 Key-Length: $KEY_LENGTH
 Key-Usage: cert
-Subkey-Type: $KEY_TYPE
-Subkey-Length: $KEY_LENGTH
-Subkey-Usage: sign
 Name-Real: $NAME
 Name-Email: $EMAIL
 Expire-Date: $EXPIRE_DATE
