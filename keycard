@@ -127,7 +127,7 @@ keycard() {
       echo "Valid commands are: install, backup, export, setup, mount, help"
       ;;
     *)
-      echo "Invalid command: $command"
+      echo "${KEYCARD_COLOR_YELLOW}Invalid command: $command ${KEYCARD_COLOR_RESET}"
       echo "Valid commands are: install, backup, export, setup, mount, help"
       return 1
       ;;
