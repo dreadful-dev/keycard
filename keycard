@@ -1,12 +1,23 @@
 #!/bin/bash
 
-KEYCARD_COLOR_RED='\033[0;31m'
-KEYCARD_COLOR_GREEN='\033[0;32m'
-KEYCARD_COLOR_YELLOW='\033[0;33m'
-KEYCARD_COLOR_BLUE='\033[0;34m'
-KEYCARD_COLOR_MAGENTA='\033[0;35m'
-KEYCARD_COLOR_CYAN='\033[0;36m'
-KEYCARD_COLOR_RESET='\033[0m'
+
+if [ -t 1 ] && [ -n "$(tput colors 2>/dev/null)" ] && [ "$(tput colors)" -ge 8 ]; then
+    KEYCARD_COLOR_RED='\033[0;31m'
+    KEYCARD_COLOR_GREEN='\033[0;32m'
+    KEYCARD_COLOR_YELLOW='\033[0;33m'
+    KEYCARD_COLOR_BLUE='\033[0;34m'
+    KEYCARD_COLOR_MAGENTA='\033[0;35m'
+    KEYCARD_COLOR_CYAN='\033[0;36m'
+    KEYCARD_COLOR_RESET='\033[0m'
+else
+    KEYCARD_COLOR_RED=''
+    KEYCARD_COLOR_GREEN=''
+    KEYCARD_COLOR_YELLOW=''
+    KEYCARD_COLOR_BLUE=''
+    KEYCARD_COLOR_MAGENTA=''
+    KEYCARD_COLOR_CYAN=''
+    KEYCARD_COLOR_RESET=''
+fi
 
 import_implementation() {
   local script_dir="$1"
@@ -102,6 +113,9 @@ keycard() {
       ;;
     setup)
       gpg_key_setup "$@"
+      ;;
+    touch)
+      touch "$@"
       ;;
     mount)
       mount_key_export "$@"
