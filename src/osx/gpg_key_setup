@@ -1,6 +1,6 @@
 #############################################################
-#  01000100 01010010 01000101 01000001 01000100 01000110    #
-#  01010101 01001100  01000100 01000101 01010110            #
+#   01000100 01010010 01000101 01000001 01000100 01000110   #
+#   01010101 01001100 00101101 01000100 01000101 01010110   #
 #############################################################
 #                                                           #
 #  GPG KEY SETUP                                            #
@@ -15,47 +15,94 @@
 #############################################################
 
 gpg_key_setup() {
+  # Check for dependencies
+  command -v gpg >/dev/null 2>&1 || { echo "❌ gpg is required but not installed. Exiting."; return; }
+  command -v wget >/dev/null 2>&1 || { echo "❌ wget is required but not installed. Exiting."; return; }
+  echo "mac key setup"
   # Temporary working directory
-  export GNUPGHOME=$(mktemp -d gnupg_$(date +%Y%m%d%H%M)_XXX)
+  export GNUPGHOME=$(mktemp -d -t gnupg_$(date +%Y%m%d%H%M)_XXX) || { echo "Failed to create temporary directory. Exiting."; return; }
 
   # Harden configuration
-  wget -O $GNUPGHOME/gpg.conf https://raw.githubusercontent.com/drduh/config/master/gpg.conf
+  wget -O $GNUPGHOME/gpg.conf https://raw.githubusercontent.com/drduh/config/master/gpg.conf || { echo "Failed to fetch gpg configuration. Exiting."; return; }
 
   # Generate a strong passphrase
-  passphrase=$(gpg --gen-random --armor 0 24)
+  passphrase=$(gpg --gen-random --armor 0 24) || { echo "Failed to generate passphrase. Exiting."; return; }
   echo "Generated passphrase: $passphrase"
 
+  KEY_TYPE="RSA"
+  KEY_LENGTH="4096"
+  EXPIRE_DATE="0"
+
+  echo "Enter your name: "
+  read NAME
+  echo "Enter your email: "
+  read EMAIL
+
+  # Create batch file
+  cat >keygen <<EOF
+%echo Generating master OpenPGP key
+Key-Type: $KEY_TYPE
+Key-Length: $KEY_LENGTH
+Key-Usage: cert
+Name-Real: $NAME
+Name-Email: $EMAIL
+Expire-Date: $EXPIRE_DATE
+%commit
+%echo done
+EOF
+
   # Generate a new key with GPG
-  gpg --expert --full-generate-key
+  gpg --batch --gen-key keygen || { echo "Key generation failed. Exiting."; return; }
+
+  rm -f keygen
+  export FINGERPRINT=$(gpg --list-secret-keys --with-colons | grep '^fpr' | head -1 | awk -F: '{print $10}')
+  echo "Extracted FINGERPRINT: $FINGERPRINT"
+  export KEYID=$(gpg --list-secret-keys --with-colons | grep '^sec:' | tail -1 | awk -F: '{print $5}')
+  echo "Extracted KEYID: $KEYID"
+  
+  # read -r -p "If the above KEYID is not the one you expect, please enter your KEYID (or press enter to continue with the extracted KEYID): " user_input
+  # if [ ! -z "$user_input" ]; then
+  #   KEYID=$user_input
+  # fi
+
+  echo "adding encryption subkey"
+  gpg --batch --quick-add-key $FINGERPRINT rsa4096 encr 1y
+  echo "adding authentication subkey"
+  gpg --batch --quick-add-key $FINGERPRINT rsa4096 auth 1y
+  echo "adding sign subkey"
+  gpg --batch --quick-add-key $FINGERPRINT rsa4096 sign 1y
 
   # Add extra identities
-  read -p "Enter additional email address (or leave blank to skip): " email
+  echo "Enter additional email address (or leave blank to skip): "
+  read email
+
   if [ ! -z "$email" ]; then
-    gpg --expert --edit-key $KEYID <<EOF
-  adduid
-  $email
-  EOF
+    printf "adduid\n$email\n" | gpg --expert --edit-key "$KEYID"
   fi
 
   # Verify
-  gpg -K
+  gpg -K || { echo "Key verification failed. Exiting."; return; }
 
-  echo "Enter your KEYID:"
-  read KEYID
+  echo "Please verify the key information above."
+  echo "Does the key look correct? (y/n) "
+  read answer
+  
+  if [ "$answer" != "${answer#[Yy]}" ] ;then
+    echo "Continuing with the process."
+  else
+    echo "Exiting."
+    return
+  fi
+  
 
-  # Verify keys
-  echo "Verifying keys..."
-  gpg -K
-  gpg --export $KEYID | hokey lint
+  # Assuming `hokey lint` is available or add a check
+  gpg --export "$KEYID" | hokey lint || { echo "hokey lint failed. Exiting."; return; }
 
   # Export secret keys
-  echo "Exporting secret keys..."
-  gpg --armor --export-secret-keys $KEYID > $GNUPGHOME/mastersub.key
-  gpg --armor --export-secret-subkeys $KEYID > $GNUPGHOME/sub.key
+  gpg --armor --export-secret-keys "$KEYID" > "$GNUPGHOME/mastersub.key" || { echo "Failed to export secret keys. Exiting."; return; }
+  gpg --armor --export-secret-subkeys "$KEYID" > "$GNUPGHOME/sub.key" || { echo "Failed to export secret subkeys. Exiting."; return; }
 
   # Create revocation certificate
-  echo "Creating revocation certificate..."
-  gpg --output $GNUPGHOME/revoke.asc --gen-revoke $KEYID
-
-  echo "Process completed."
+  gpg --output "$GNUPGHOME/revoke.asc" --gen-revoke "$KEYID" || { echo "Failed to create revocation certificate. Exiting."; return; }
+  echo "🔐 Done creating keys"
 }
